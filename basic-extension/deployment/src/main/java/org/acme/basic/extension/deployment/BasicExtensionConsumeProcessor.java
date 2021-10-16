@@ -8,6 +8,7 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -29,8 +30,14 @@ class BasicExtensionConsumeProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
+    @Inject
+    BuildProducer<GeneratedResourceBuildItem> resourceProducer;
+
+    @Inject
+    BuildProducer<NativeImageResourceBuildItem> nativeResourceProducer;
+
     @BuildStep
-    void writeGreetings(List<GreetingsBuildItem> greetings, BuildProducer<GeneratedResourceBuildItem> producer) throws IOException {
+    void writeGreetings(List<GreetingsBuildItem> greetings) throws IOException {
         String greetingsLine = greetings.stream()
                 .flatMap(greetingsBuildItem -> greetingsBuildItem.getGreetings().stream())
                 .collect(Collectors.joining(","));
@@ -44,14 +51,11 @@ class BasicExtensionConsumeProcessor {
             writer.write("\n");
             writer.flush();
 
-            producer.produce(new GeneratedResourceBuildItem(GREETINGS_TXT, out.toByteArray()));
+            resourceProducer.produce(new GeneratedResourceBuildItem(GREETINGS_TXT, out.toByteArray()));
             logger.info("Wrote greetings to {}", GREETINGS_TXT);
-        }
-    }
 
-    @BuildStep
-    void includeGreetingsFile(BuildProducer<NativeImageResourceBuildItem> producer) {
-        logger.info("Registering {} as a native image resource", GREETINGS_TXT);
-        producer.produce(new NativeImageResourceBuildItem(GREETINGS_TXT));
+            logger.info("Registering {} as a native image resource", GREETINGS_TXT);
+            nativeResourceProducer.produce(new NativeImageResourceBuildItem(GREETINGS_TXT));
+        }
     }
 }
