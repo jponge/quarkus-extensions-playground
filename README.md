@@ -12,4 +12,9 @@
 * Expose as a (synthetic) bean with build-time provided values
 * Show build / runtime recorders
 
+## Configuration extension
+
+* Defining build-time configuration
+* Recording a configuration model
+* Injecting a non-application (Vert.x) route
 
