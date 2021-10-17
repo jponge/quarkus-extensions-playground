@@ -1,20 +1,27 @@
 package org.acme.greetings.lib.integration.extension.deployment;
 
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExecutorBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.runtime.RuntimeValue;
 import org.acme.Greeter;
 import org.acme.greetings.extension.GreetingsRecorder;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
+import java.util.Collection;
 
 class GreetingsLibIntegrationExtensionProcessor {
 
@@ -54,5 +61,15 @@ class GreetingsLibIntegrationExtensionProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     void makeSomeGreetingsDuringBoot(ExecutorBuildItem executorBuildItem, GreetingsBuildItem greetingsBuildItem, GreetingsRecorder recorder) {
         recorder.runSomeGreetings(executorBuildItem.getExecutorProxy(), greetingsBuildItem.getGreetings());
+    }
+
+    @BuildStep
+    void lookupGreeterImplementation(CombinedIndexBuildItem indexBuildItem, BuildProducer<NativeImageResourceBuildItem> fake) {
+        logger.info("Looking for org.acme.Greeter implementations");
+        IndexView index = indexBuildItem.getIndex();
+        Collection<ClassInfo> allKnownImplementors = index.getAllKnownImplementors(DotName.createSimple("org.acme.Greeter"));
+        for (ClassInfo implementor : allKnownImplementors) {
+            logger.info("💡 {} is an implementation of org.acme.Greeter and has methods {}", implementor.name(), implementor.methods());
+        }
     }
 }
