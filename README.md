@@ -18,3 +18,7 @@
 * Recording a configuration model
 * Injecting a non-application (Vert.x) route
 
+## Reflection extension
+
+* Register a class for reflective access
+* Bytecode engineering with ASM
