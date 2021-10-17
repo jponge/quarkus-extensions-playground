@@ -1,21 +1,22 @@
 package org.acme.configuration.model.extension.it;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.test.junit.QuarkusTest;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 @QuarkusTest
 public class ConfigurationModelExtensionResourceTest {
 
     @Test
     public void testHelloEndpoint() {
-        given()
-                .when().get("/configuration-model-extension")
+        RestAssured.given()
+                .when()
+                .get("/q/greetings")
                 .then()
                 .statusCode(200)
-                .body(is("Hello configuration-model-extension"));
+                .body("greetings.size()", equalTo(2))
+                .body("greetings.find { it.contains 'Bonjour Julien' }", equalTo(">>>Bonjour Julien!"));
     }
 }
